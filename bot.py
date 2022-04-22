@@ -36,27 +36,46 @@ from api_rubika import Bot,encryption
 def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
+def hasAds(msg):
+	links = ["http://","https://",".ir",".com",".org",".net",".me"]
+	for i in links:
+		if i in msg:
+			return True
+
+def hasAds(msg):
+	links = list(map(lambda ID: ID.strip()[1:],findall("http://","https://",".ir",".com",".org",".net",".me", msg))) + list(map(lambda link:link.split("/")[-1],findall("rubika\.ir/\w+",msg)))
+	joincORjoing = "joing" in msg or "joinc" in msg
+			
 def hasInsult(msg):
 	swData = [False,None]
-	for i in open("dontReadMe.txt").read().split("\n"):
+	for i in open("blackstar.txt").read().split("\n"):
 		if i in msg:
 			swData = [True, i]
 			break
 		else: continue
 	return swData
+	
+# static variable
+answered, sleeped, retries = [], False, {}
 
-def hasAds(msg):
-	links = list(map(lambda ID: ID.strip()[1:],findall("@[\w|_|\d]+", msg))) + list(map(lambda link:link.split("/")[-1],findall("rubika\.ir/\w+",msg)))
-	joincORjoing = "joing" in msg or "joinc" in msg
+alerts, blacklist = [] , []
 
-	if joincORjoing: return joincORjoing
-	else:
-		for link in links:
-			try:
-				Type = bot.getInfoByUsername(link)["data"]["chat"]["abs_object"]["type"]
-				if Type == "Channel":
-					return True
-			except KeyError: return False
+def alert(guid,user,link=False):
+	alerts.append(guid)
+	coun = int(alerts.count(guid))
+
+	haslink = ""
+	if link : haslink = "گزاشتن لینک در گروه ممنوع میباشد .\n\n"
+
+	if coun == 1:
+		bot.sendMessage(target, "💢 اخطار [ @"+user+" ] \n"+haslink+" شما (1/3) اخطار دریافت کرده اید .\n\nپس از دریافت 3 اخطار از گروه حذف خواهید شد !\nجهت اطلاع از قوانین کلمه (قوانین) را ارسال کنید .")
+	elif coun == 2:
+		bot.sendMessage(target, "💢 اخطار [ @"+user+" ] \n"+haslink+" شما (2/3) اخطار دریافت کرده اید .\n\nپس از دریافت 3 اخطار از گروه حذف خواهید شد !\nجهت اطلاع از قوانین کلمه (قوانین) را ارسال کنید .")
+
+	elif coun == 3:
+		blacklist.append(guid)
+		bot.sendMessage(target, "🚫 کاربر [ @"+user+" ] \n (3/3) اخطار دریافت کرد ، بنابراین اکنون اخراج میشود .")
+		bot.banGroupMember(target, guid)
 
 def search_i(text,chat,bot):
     try:
@@ -667,7 +686,7 @@ def get_backup(text,chat,bot):
 
 g_usvl = ''
 test_usvl = ''
-auth = "kgerbzgyvtumlwmbzasaluddbrhaivkp"
+auth = "dlbycvixjvrubovqlgswzcnuwdpkgmjj"
 bot = Bot(auth)
 list_message_seened = []
 time_reset = random._floor(datetime.datetime.today().timestamp()) + 350
@@ -835,7 +854,7 @@ while(2 > 1):
                             elif text.startswith('پینگ'):
                                 tawd21 = Thread(target=get_ping, args=(text, chat, bot,))
                                 tawd21.start()
-                            elif text.startswith('فونت'):
+                            elif text.startswith('فونت ['):
                                 tawd20 = Thread(target=get_font, args=(text, chat, bot,))
                                 tawd20.start()
                             elif text.startswith('font'):
@@ -844,7 +863,7 @@ while(2 > 1):
                             elif text.startswith('ویس'):
                                 tawd19 = Thread(target=get_whois, args=(text, chat, bot,))
                                 tawd19.start()
-                            elif text.startswith('واج'):
+                            elif text.startswith('واجه'):
                                 tawd33 = Thread(target=get_vaj, args=(text, chat, bot,))
                                 tawd33.start()
                             elif text.startswith('اب هوا'):
